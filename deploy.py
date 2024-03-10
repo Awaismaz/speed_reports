@@ -18,6 +18,7 @@ def reload_web_app():
 
 def main():
     console_id = 32786310
+
     if send_console_command(console_id, "git pull"):
         print("Git pull command sent successfully.")
     else:
