@@ -1,0 +1,307 @@
+{% load my_filters %}
+<!DOCTYPE html>
+<html lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ file_name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        @media print {
+            .numeric-data-section {
+        transform-origin: top left;
+        transform: scale(1);  /* Adjust the scale as needed */
+
+
+            }
+            body {
+                    background-color: #ffffff;
+                    color: #000000;
+                    font-family: 'Arial', sans-serif;
+                    margin: 0;
+                    padding: 20px;
+            }
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #000000;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #000000;
+        }
+
+        .report-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .details-section, .gauge-section {
+            flex: 1;
+            padding: 15px;
+            margin: 5px;
+            background-color: #dcdcdc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .icon {
+            color: #000000;
+            margin-right: 8px;
+        }
+        .numeric-data-section {
+            max-width: 95%; /* Adjust the width to be less than 100% */
+            margin: 0 auto; /* Center the container */
+            padding: 0 15px; /* Add padding */
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0px;
+            text-align: left;
+            page-break-inside: avoid;
+        }
+
+        .table th, .table td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .table th {
+            background-color: white;
+        }
+        .gauge {
+            position: relative;
+            border-radius: 50%/100% 100% 0 0;
+            background-color: var(--color, #64cbcb);
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Added shadow for depth */
+        }
+        .gauge:before {
+            content: "";
+            display: block;
+            padding-top: 50%;
+        }
+        .gauge .chart {
+            overflow: hidden;
+        }
+        .gauge .mask {
+            position: absolute;
+            left: 13%;
+            right: 13%;
+            bottom: 0;
+            top: 26%;
+            background-color: #dcdcdc;
+            border-radius: 50%/100% 100% 0 0;
+            box-shadow: inset 0 -3px 6px rgba(0, 0, 0, 0.1); /* Inner shadow for 3D effect */
+        }
+
+        .gauge .percentage {
+            position:  absolute;
+            top: -1px;
+            left: -1px;
+            bottom: 0;
+            right: -1px;
+            background-color: var(--background, #e9ecef);
+            transform: rotate(var(--rotation)); 
+            transform-origin: bottom center; 
+            transition-duration: 600ms;
+        }
+        .gauge:hover {
+            --rotation: 100deg; /* Interactive on hover */
+        }
+        .gauge .value {
+            position: absolute; 
+            bottom: 5%; 
+            left: 50%; /* Centering horizontally */
+            transform: translateX(-50%); /* Adjust for exact centering */
+            text-align: center;
+            font-size: 30px; /* Larger font size */
+            font-weight: bold; /* Bold font */
+            color: var(--color, #000000); /* Color matching the gauge */
+            border: 2px solid #a0db6f; /* White border */
+            border-radius: 5px;
+            padding: 5px; /* Padding around the text */
+            box-sizing: border-box; /* To include padding and border in width */
+            width: fit-content; /* Width based on content size */
+        }
+
+
+
+        .gauge .min, .gauge .max , .gauge .mid{
+            position: absolute;
+            bottom: 0; 
+            font-size: 20px; /* Smaller font size */
+            color: #000000; /* Subtle color */
+        }
+
+        .gauge .min {
+            left: 18%;
+        }
+        .gauge .mid {
+            left: 47%;
+            bottom: 60%
+        }
+
+        .gauge .max {
+            right: 15%;
+        } 
+        .lane-gauges-section {
+    margin-top: 20px;
+}
+
+.lane-gauges-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.lane-gauge {
+    flex: 0 0 calc(25% - 40px); /* No growth, no shrink, fixed width */
+    margin: 20px;
+
+    text-align: center;
+}
+
+.lane-gauge .gauge {
+    margin: 0 auto; 
+}
+@media print {
+    #printButton {
+      display: none;
+    }
+  }
+      
+    </style>
+</head>
+<body>
+    <button id="printButton" onclick="window.print();">Print to PDF</button>
+    <div id="reportContent">
+        <h1 class="main-title">
+            <i class="fas fa-tachometer-alt icon"></i>Speed Enforcement Evaluator
+        </h1>
+        <div class="report-container">
+            <!-- Details Section -->
+            <div class="details-section">
+                <h3 class="section-title"><i class="fas fa-map-marked-alt icon"></i>Location</h3>
+                <p class="section-content">{{ location }}</p>
+    
+                <h3 class="section-title"><i class="fas fa-road icon"></i>Closest Cross Street</h3>
+                <p class="section-content">{{ closest_street }}</p>
+    
+                {% if False %}
+                    <h3 class="section-title"><i class="fas fa-satellite-dish icon"></i>GPS Coordinates</h3>
+                    <p class="section-content">{{ gps_coords }}</p>
+                {% endif %}
+    
+                {% if show_dates %}
+                    <h3 class="section-title"><i class="fas fa-calendar-alt icon"></i>Analysis Dates</h3>
+                    <p class="section-content">{{ start_date }} to {{ end_date }}</p>
+                {% endif %}
+    
+                {% if show_equipment_used %}
+                    <h3 class="section-title"><i class="fas fa-tools icon"></i>Equipment Used</h3>
+                    <p class="section-content">{{ equipment_used }}</p>
+                {% endif %}
+    
+                {% if show_installed_by %}
+                    <h3 class="section-title"><i class="fas fa-user-check icon"></i>Installed By</h3>
+                    <p class="section-content">{{ installed_by }}</p>
+                {% endif %}
+    
+                {% if show_requested_by %}
+                    <h3 class="section-title"><i class="fas fa-user-plus icon"></i>Requested By</h3>
+                    <p class="section-content">{{ requested_by }}</p>
+                {% endif %}
+                
+                <div class="map-container">
+                    <iframe
+                        width="600"
+                        height="450"
+                        frameborder="0" style="border:0"
+                        src="https://www.google.com/maps?q={{ map_location }}&output=embed">
+                    </iframe>
+                </div>
+    
+            </div>
+    
+            <!-- Gauge Section -->
+            <div class="gauge-section">
+                <div class="gauge" style="--rotation:{{ adjusted_violations }}deg; --color:{% if total_violations > 70 %}red{% elif total_violations > 40 %}orange{% else %}green{% endif %};--background:#454c53;">
+                    <!-- Gauge content -->
+                    <div class="percentage"></div>
+                    <div class="mask"></div>
+                    <span class="value">{{ total_violations }}%</span>
+                    <span class="min">0%</span>
+                    <span class="mid">50%</span>
+                    <span class="max">100%</span>
+                </div>
+                {% if show_speed_limit %}
+                <h3 class="section-title"><i class="fas fa-tachometer-alt icon"></i>Posted Speed Limit: {{ speed_limit }} KPH</h3>
+                {% endif %}
+                {% if show_tolerance %}
+                <h3 class="section-title"><i class="fas fa-balance-scale icon"></i>Enforcement Tolerance: {{ tolerance }} KPH</h3>
+                {% endif %}
+                <h3 class="section-title"><i class="fas fa-tachometer-alt icon"></i>Enforcement Limit: {{ enforcement_limit }} KPH & Up</h3>
+                <h3 class="section-title"><i class="fas fa-chart-bar icon"></i>Percentage Above Limit: {{ total_violations }}%</h3>
+            
+                <!-- Enforcement Rating -->
+                <h3 class="section-title">
+                    <i class="fas fa-exclamation-triangle icon"></i>
+                    Enforcement Rating: 
+                    <span style="color: {% if total_violations > 70 %}red{% elif total_violations > 40 %}orange{% else %}green{% endif %}">
+                        {% if total_violations > 70 %}HIGH{% elif total_violations > 40 %}MEDIUM{% else %}LOW{% endif %}
+                    </span>
+                </h3>
+            </div>
+        </div>
+        <div class="lane-gauges-section">
+            <h2 class="section-title">Lane-Wise Analysis</h2>
+            <div class="lane-gauges-container">
+                {% for lane, violation in lane_violations.items %}
+                    <div class="lane-gauge">
+                        <h4>Lane {{ lane }}</h4>
+                        <div class="gauge" style="--rotation:{{ violation|multiply:1.8 }}deg; --color:{% if violation > 70 %}red{% elif violation > 40 %}orange{% else %}green{% endif %}; --background:#454c53;">
+                            <div class="percentage"></div>
+                            <div class="mask"></div>
+                            <span class="value">{{ violation }}%</span>
+                        </div>
+                        <div class="enforcement-rating">
+                            Enforcement Rating: 
+                            <span style="color: {% if violation > 70 %}red{% elif violation > 40 %}orange{% else %}green{% endif %}">
+                                {% if violation > 70 %}HIGH{% elif violation > 40 %}MEDIUM{% else %}LOW{% endif %}
+                            </span>
+                        </div>
+                    </div>
+    
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% if show_numeric_data %}
+        <div class="numeric-data-section">
+            <h2 class="section-title"><i class="fas fa-chart-bar icon"></i>Combined Speed Bins</h2>
+            {{ combined_table_html|safe }}
+            <p>{{ percentile }}th Percentile = {{ combined_percentile_value }}</p>
+        
+            {% for lane, table_info in lane_tables_html.items %}
+                <h3>Lane {{ lane }} Speed Bins</h3>
+                {{ table_info.html|safe }}
+                <p>{{ percentile }}th Percentile = {{ table_info.percentile }}</p>
+            {% endfor %}
+        
+        </div>
+        {% endif %} 
+    </div>
+
+    
+</body>
+</html>

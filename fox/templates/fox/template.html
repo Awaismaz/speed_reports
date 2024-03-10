@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{file_name}}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .top-table {
+        background-color: #7bd0d6;
+        border-collapse: collapse;
+        width: 30%;
+        text-align: left;
+        }
+        table {
+        border-collapse: collapse;
+        width: 100%;
+        text-align: left;
+        }
+
+        th, td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        }
+
+        th {
+        background-color: #7bd0d6;
+        color: #333;
+        white-space: nowrap;
+        }
+
+        tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+        }
+
+        tbody tr:hover {
+        background-color: #ddd;
+        }
+        @media print {
+            #printButton {
+              display: none;
+            }
+          }
+    </style>
+
+</head>
+<body>
+    <button id="printButton" onclick="window.print();">Print to PDF</button>
+
+    <div id="reportContent">
+        <div style="text-align: center;">
+
+                <p>{{ company_header }}</p>
+
+        </div>
+    
+        {% if advance %}
+        <h1>{{ category }}</h1>
+        {% else %}
+        <h1>{{ category }} BY HOUR</h1>
+        {% endif %}
+        
+        <div>
+            
+            <p><pre><b>Location</b>:           {{ report_location }}</pre></p>
+            <p><pre><b>Site Code</b>:          {{ site_code }}</pre></p>
+            <p><pre><b>Description</b>:        {{ report_description }}</pre></p>
+            
+        </div>
+    
+    
+        <p></p>
+        <h1>Filter by</h1>
+        <p></p>
+        <table class="top-table">
+            <tbody>
+                <tr>
+                    <td>Direction</td>
+                    <td>({{ direction_filter }})</td>
+                </tr>
+    
+                <tr>
+                    <td>Lane</td>
+                    <td>{{ lane_filter }}</td>
+                </tr>
+                <tr>
+                    <td>From</td>
+                    <td>({{ start_date }})</td>
+                </tr>
+                <tr>
+                    <td>To</td>
+                    <td>({{ end_date }})</td>
+                </tr>
+            </tbody>
+        </table>
+        <p></p>
+        {% if category == "PERCENTILES" or category == "SCHOOL ZONE STUDY" %}
+            <h3>Posted Speed Limit: {{ speed_limit }} KPH</h3>
+        {% endif %}
+    
+    
+        {% if category == "SCHOOL ZONE STUDY" %}
+        <h3>
+            Violation Percentage: {{ total_violations }}
+        </h3>
+        <h3 class="section-title">
+            <i class="fas fa-exclamation-triangle icon"></i>
+            Enforcement Rating: 
+            <span style="color: {% if total_violations > 70 %}red{% elif total_violations > 40 %}orange{% else %}green{% endif %}">
+                {% if total_violations > 70 %}HIGH{% elif total_violations > 40 %}MEDIUM{% else %}LOW{% endif %}
+            </span>
+        </h3>
+        {% endif %}
+        <p></p>
+        {{ my_table|safe }}
+        {% if show_aadt %}
+        <div>
+            
+            <p><pre><b>ADT:</b> {{ ADT }}          <b>Factor:</b> {{ Factor }}          <b>AADT:</b> {{ AADT }}</pre></p>
+            
+        </div>
+        {% endif %}
+    </div>
+
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+
+
+</html>

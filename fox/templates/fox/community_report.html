@@ -1,0 +1,144 @@
+<div id="communitySafetyReport" class="container tab-pane fade"><br>
+    <form id="community_form">
+    <!-- Location Input -->
+    <div class="form-group row">
+        <label for="locationInput" class="col-sm-2 col-form-label">Location:</label>
+        <div class="col-sm-10">
+        <input type="text" class="form-control" name="locationInput" placeholder="Enter Location">
+        </div>
+    </div>
+
+    <!-- Closest Cross Street Input -->
+    <div class="form-group row">
+        <label for="closestCrossStreet" class="col-sm-2 col-form-label">Closest Cross Street:</label>
+        <div class="col-sm-10">
+        <input type="text" class="form-control" name="closestCrossStreet" placeholder="Enter Closest Cross Street">
+        </div>
+    </div>
+
+    <!-- Posted Speed Limit with Checkbox -->
+    <div class="form-group row">
+        <label for="postedSpeedLimit" class="col-sm-2 col-form-label">Posted Speed Limit:</label>
+        <div class="col-sm-4">
+        <input type="number" class="form-control" name="postedSpeedLimit" value="70" min="0">
+        </div>
+        <div class="col-sm-6">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="showSpeedLimit" checked>
+            <label class="form-check-label" for="showSpeedLimit">Show Speed Limit</label>
+        </div>
+        </div>
+    </div>
+
+    <!-- Enforcement Tolerance with Checkbox -->
+    <div class="form-group row">
+        <label for="enforcementTolerance" class="col-sm-2 col-form-label">Enforcement Tolerance:</label>
+        <div class="col-sm-4">
+        <input type="number" class="form-control" name="enforcementTolerance" value="5" min="0">
+        </div>
+        <div class="col-sm-6">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="showEnforcementTolerance" checked>
+            <label class="form-check-label" for="showEnforcementTolerance">Show Enforcement Tolerance</label>
+        </div>
+        </div>
+    </div>
+    <!-- Analysis Dates Section -->
+    <div class="form-group row">
+        <div class="col-sm-2">Include Dates:</div>
+        <div class="col-sm-10">
+            <input type="checkbox" id="includeAnalysisDates" name="includeAnalysisDates" checked>
+            <label for="includeAnalysisDates">Yes</label>
+        </div>
+    </div>
+
+    <!-- Start Date and End Date -->
+    <div class="form-group row">
+    <label for="startDate" class="col-sm-2 col-form-label">Start Date</label>
+    <div class="col-sm-4">
+        <input type="date" class="form-control" id="startDate2" name="startDate"/>
+    </div>
+    <label for="endDate" class="col-sm-2 col-form-label">End Date</label>
+    <div class="col-sm-4">
+        <input type="date" class="form-control" id="endDate2" name="endDate"/>
+    </div>
+    </div>
+
+    <!-- Text Inputs with Checkboxes for Equipment Used, Installed By, Requested By -->
+    <div class="form-group row">
+        <div class="col-sm-5">
+            <input type="text" class="form-control" placeholder="Equipment Used" name="equipmentUsed">
+        </div>
+        <div class="col-sm-1">
+            <input type="checkbox" name="includeEquipmentUsed" class="form-check-input" checked>
+            <label for="includeEquipmentUsed" class="form-check-label">Include</label>
+        </div>
+        <div class="col-sm-5">
+            <input type="text" class="form-control" placeholder="Installed By" name="installedBy">
+        </div>
+        <div class="col-sm-1">
+            <input type="checkbox" name="includeInstalledBy" class="form-check-input" checked>
+            <label for="includeInstalledBy" class="form-check-label">Include</label>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-sm-5">
+            <input type="text" class="form-control" placeholder="Requested By" name="requestedBy">
+        </div>
+        <div class="col-sm-1">
+            <input type="checkbox" name="includeRequestedBy" class="form-check-input" checked>
+            <label for="includeRequestedBy" class="form-check-label">Include</label>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-sm-3">Include Numeric Data:</div>
+        <div class="col-sm-9">
+            <input type="checkbox" id="includeNumericData" name="includeNumericData" checked>
+            <label for="includeNumericData">Yes</label>
+        </div>
+    </div>
+
+    <!-- Numeric Data with Range Slider -->
+    <div class="form-group row">
+        <label for="percentileSelect" class="col-sm-2 col-form-label">Percentile:</label>
+        <div class="col-sm-10">
+        <input type="range" class="custom-range" name="percentileSelect" id="percentileSelect" min="0" max="100" value="85">
+        <span id="percentileValue" class="float-right">85%</span>
+        </div>
+    </div>
+
+    <!-- Preview and Save Report Buttons -->
+    <div class="form-group row">
+        <div class="col-sm-12 text-right">
+            <button type="button" id="previewReportButton" class="btn btn-secondary">Preview Report</button>
+
+
+        </div>
+    </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('previewReportButton').addEventListener('click', function() {
+        const form = document.getElementById('community_form');
+        const formData = new FormData(form);
+        formData.append('action', 'preview');
+        
+        fetch('/community_report/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json()) // Assuming your server responds with JSON
+        .then(data => {
+            console.log(data)
+            const reportWindow = window.open();
+            reportWindow.document.open();
+            reportWindow.document.write(data.html_content);
+            reportWindow.document.close();
+            
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>

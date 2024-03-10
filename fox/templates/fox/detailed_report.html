@@ -1,0 +1,349 @@
+<style>
+    .total-records p {
+        text-align: center; /* Centers the text inside .total-records */
+        font-size: 24px; /* Makes the font larger */
+        font-weight: bold; /* Optional: makes the font bold */
+    }
+  </style>
+  
+  <div id="detailedReport" class="container tab-pane active">
+    <br />
+    <!-- Detailed Report Content -->
+    <form id="dataUploadForm">
+      <div class="form-group row">
+        <label for="selectDevice" class="col-sm-2 col-form-label">Select Device</label>
+        <div class="col-sm-10">
+          <select class="form-control" id="selectDevice" name="selectDevice">
+            <option value="0">AGD 34</option> <!-- Adjusted values for easier processing -->
+            <option value="1">FOX</option>
+            <!-- Add other devices as options -->
+          </select>
+        </div>
+      </div>
+    
+      <div class="form-group row">
+        <div class="col-sm-10">
+          <div class="custom-file">
+            <input type="file" class="custom-file-input" id="fileInput" name="myfile" />
+            <label class="custom-file-label" for="fileInput">Choose your File</label>
+          </div>
+        </div>
+        <div class="col-sm-2">
+          <button type="button" class="btn btn-primary" id="uploadButton">Upload</button>
+        </div>
+      </div>
+    </form>
+  
+    <div id="Filters">
+        <form id="filterForm" >
+            
+          <!-- Direction Filter -->
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Direction Filter</label>
+            <div class="col-sm-10">
+              <select class="form-control" id="directionFilter" name="direction">
+                <option>All</option>
+                <option>A</option>
+                <option>R</option>
+              </select>
+            </div>
+          </div>
+      
+          <!-- Start Date and End Date -->
+          <div class="form-group row">
+            <label for="startDate" class="col-sm-2 col-form-label">Start Date</label>
+            <div class="col-sm-4">
+              <input type="date" class="form-control" id="startDate" name="startDate"/>
+            </div>
+            <label for="endDate" class="col-sm-2 col-form-label">End Date</label>
+            <div class="col-sm-4">
+              <input type="date" class="form-control" id="endDate" name="endDate"/>
+            </div>
+          </div>
+      
+          <!-- Lane Filter -->
+          <div class="form-group row">
+              <label class="col-sm-2 col-form-label pt-0">Lane Filter</label>
+              <div class="col-sm-10">
+              {% for lane in lanes %}
+              <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="lane{{ lane }}" value="{{ lane }}" name="lanes">
+                  <label class="form-check-label" for="lane{{ lane }}">{{ lane }}</label>
+              </div>
+              {% endfor %}
+              </div>
+          </div>
+      
+          <div class="form-group row">
+            <div class="col-sm-12 text-right">
+              <button type="button" class="btn btn-primary" id="applyFilters">Apply Filters</button>
+            </div>
+          </div>
+        </form>
+      
+        <div class="total-records">
+          <p>Total Records: <span id="totalRecords"></span></p>
+        </div>
+    </div>    
+  
+    <form id="report">
+        <div class="form-group row">
+            <div class="col-sm-12">
+              <textarea
+                class="form-control"
+                placeholder="Company Header"
+                id="companyHeader"
+                name="companyHeader"
+                rows="3"
+              ></textarea>
+            </div>
+          </div>
+      <div class="form-group row">
+        <div class="col-sm-6">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Enter Location"
+            name="locationInput"
+            id="locationInput"
+          />
+        </div>
+        <div class="col-sm-6">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Enter Site Code"
+            id="siteCodeInput"
+            name="siteCodeInput"
+          />
+        </div>
+      </div>
+  
+      <div class="form-group row">
+        <div class="col-sm-12">
+          <textarea
+            class="form-control"
+            placeholder="Report Description"
+            id="reportDescription"
+            name="reportDescription"
+            rows="3"
+          ></textarea>
+        </div>
+      </div>
+      <!-- Speed Bins -->
+      <div class="form-group row">
+          <label class="col-form-label col-sm-2 pt-0">Speed Bins</label>
+          <div class="col-sm-10">
+            {% for count in speed_bins_counts %}
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="speedBins" id="speedBin{{ forloop.counter }}" value="{{ count }}" {% if forloop.first %}checked{% endif %}>
+                <label class="form-check-label" for="speedBin{{ forloop.counter }}">{{ count }}</label>
+            </div>
+            {% endfor %}
+            
+          
+          <!-- Custom Speed Bin -->
+          <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="speedBins" id="{{ custom_bin.id }}" value="custom">
+              <label class="form-check-label" for="{{ custom_bin.id }}">{{ custom_bin.label }}</label>
+          </div>
+          <input class="form-control form-control-sm w-auto d-inline-block" type="number" id="customBinValue" name="customBinValue" min="1" placeholder="Enter count" {% if not custom_bin_selected %}disabled{% endif %}>
+          </div>
+      </div>
+      
+      <!-- Export Formats -->
+      <div class="form-group row">
+          <label class="col-sm-2 col-form-label">Export Formats</label>
+          <div class="col-sm-10">
+            {% for format in export_formats %}
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="exportFormat" id="{{ format.id }}" value="{{ format.value }}" {% if forloop.first %}checked{% endif %} />
+                <label class="form-check-label" for="{{ format.id }}">{{ format.label }}</label>
+            </div>
+            {% endfor %}
+            
+          </div>
+      </div>
+  
+      <!-- Report Type and AADT Checkbox and Preview/Save Buttons -->
+      <div class="form-group row">
+          <label class="col-sm-2 col-form-label">Report Type</label>
+          <div class="col-sm-2">
+          <select class="form-control" name="reportType" id="reportType">
+              {% for type in report_types %}
+              <option value="{{ type.value }}">{{ type.label }}</option>
+              {% endfor %}
+          </select>
+          </div>
+          
+          <div class="col-sm-2">
+          <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="showAADT" name="showAADT">
+              <label class="form-check-label" for="showAADT">Show AADT</label>
+          </div>
+          </div>
+      
+          <div class="col-sm-6 text-right">
+            <button type="button" class="btn btn-secondary" id="preview">
+                Preview Report (PDF)
+            </button>
+            <button type="button" class="btn btn-primary" id="save">
+                Save Report (Excel and CSV)
+            </button>
+          </div>
+      </div>
+      
+    </form>
+  
+  </div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const uploadButton = document.getElementById('uploadButton');
+      uploadButton.addEventListener('click', function() {
+        const form = document.getElementById('dataUploadForm');
+        const formData = new FormData(form);
+        
+        fetch('/upload/', {
+          method: 'POST',
+          body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            document.getElementById('startDate').value = data.start_date;
+            document.getElementById('endDate').value = data.end_date;
+            document.getElementById('startDate2').value = data.start_date;
+            document.getElementById('endDate2').value = data.end_date;
+            document.getElementById('startDate3').value = data.start_date;
+            document.getElementById('endDate3').value = data.end_date;
+            document.getElementById('totalRecords').textContent = data.total_records;
+  
+            // Get all lane checkboxes
+            var laneCheckboxes = document.querySelectorAll('input[type=checkbox][name=lanes]');
+  
+            // First, disable all lane checkboxes
+            laneCheckboxes.forEach(function(checkbox) {
+                checkbox.disabled = true;
+                checkbox.checked = false;
+            });
+  
+            // Then enable only the available lanes
+            data.available_lanes.forEach(function(lane) {
+                var checkbox = document.querySelector('input[type=checkbox][id="lane' + lane + '"]');
+                if (checkbox) {
+                    checkbox.disabled = false;
+                    checkbox.checked = true;
+                }
+            });
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          // Handle errors e.g., show error message to user
+        });
+      });
+    });
+  </script>
+  
+  <script>
+    document.getElementById('applyFilters').addEventListener('click', function() {
+        const form = document.getElementById('filterForm');
+        const formData = new FormData(form);
+        
+        fetch('/update/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json()) // Assuming your server responds with JSON
+        .then(data => {
+            console.log(data)
+            document.getElementById('totalRecords').textContent = data.total_records; // Update with the actual response data
+        })
+        .catch(error => console.error('Error:', error));
+    });
+  </script>
+  
+  <script>
+    document.getElementById('preview').addEventListener('click', function() {
+        const form = document.getElementById('report');
+        const formData = new FormData(form);
+        formData.append('action', 'preview');
+        
+        fetch('/preview/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json()) // Assuming your server responds with JSON
+        .then(data => {
+            console.log(data)
+            const reportWindow = window.open();
+            reportWindow.document.open();
+            reportWindow.document.write(data.html_content);
+            reportWindow.document.close();
+            
+        })
+        .catch(error => console.error('Error:', error));
+    });
+  </script>
+  
+  <script>
+    document.getElementById('save').addEventListener('click', function() {
+        const form = document.getElementById('report');
+        const formData = new FormData(form);
+        formData.append('action', 'save');
+        
+        fetch('/preview/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            // Ensure 'response' is used within this scope
+            if (response.ok) {
+                // Extract filename from Content-Disposition header
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let fileName = 'download'; // Default filename
+                if (contentDisposition) {
+                    const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                    
+                    if (fileNameMatch && fileNameMatch.length > 1) {
+                        fileName = fileNameMatch[1];
+                        console.log(fileName)
+                        fileName = fileName.replace(/^"|"$/g, '');
+                    }
+                }
+                
+                return response.blob().then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName; // Use the extracted or default filename
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                });
+            } else {
+                // Handle non-ok responses or throw an error
+                throw new Error('Network response was not ok.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+  </script>  
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Listen for changes on the file input element
+      document.getElementById('fileInput').addEventListener('change', function(event) {
+        // Get a reference to the label element
+        var label = document.querySelector("label[for='fileInput']");
+    
+        // Retrieve the file name from the input
+        var fileName = event.target.value.split('\\').pop(); // Extract the file name from the path
+    
+        // If a file name is present, update the label; otherwise, use default text
+        label.textContent = fileName ? fileName : 'Choose your File';
+      });
+    });
+    </script>
+    

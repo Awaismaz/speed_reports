@@ -1,0 +1,152 @@
+<div id="schoolZoneStudy" class="container tab-pane fade"><br>
+    <form id="school_form">
+    <!-- Location Input -->
+    <div class="form-group row">
+        <label for="locationInput" class="col-sm-2 col-form-label">Location:</label>
+        <div class="col-sm-10">
+        <input type="text" class="form-control" name="locationInput" placeholder="Enter Location">
+        </div>
+    </div>
+
+    <!-- Posted Speed Limit Input -->
+    <div class="form-group row">
+        <label for="postedSpeedLimit" class="col-sm-2 col-form-label">Posted Speed Limit:</label>
+        <div class="col-sm-10">
+        <input type="number" class="form-control" name="postedSpeedLimit" value="20" min="0">
+        </div>
+    </div>
+
+    <!-- Date Range Option -->
+    <div class="form-group row">
+        <div class="col-sm-2 d-flex align-items-center">
+            <input class="form-check-input" type="radio" name="dateSelection" id="dateRangeOption" value="range" checked>
+            <label class="form-check-label ml-2" for="dateRangeOption">Date Range:</label>
+        </div>
+        <div class="col-sm-5">
+            <input type="date" class="form-control" id="startDate3" name="startDate">
+        </div>
+        <div class="col-sm-5">
+            <input type="date" class="form-control" id="endDate3" name="endDate">
+        </div>
+    </div>
+
+    <!-- Specific Date Option -->
+    <div class="form-group row">
+        <div class="col-sm-2 d-flex align-items-center">
+            <input class="form-check-input" type="radio" name="dateSelection" id="specificDateOption" value="specific">
+            <label class="form-check-label ml-2" for="specificDateOption">Specific Date:</label>
+        </div>
+        <div class="col-sm-10">
+            <input type="date" class="form-control" name="specificDate" value="2000-01-01">
+        </div>
+    </div>
+
+
+    <!-- Direction Dropdown -->
+    <div class="form-group row">
+        <label for="directionSelect" class="col-sm-2 col-form-label">Direction:</label>
+        <div class="col-sm-10">
+        <select class="form-control" name="directionSelect">
+            <option>All</option>
+            <option>A</option>
+            <option>R</option>
+        </select>
+        </div>
+    </div>
+
+    <!-- School Zone Study Times -->
+    <div class="form-group row">
+        <label for="schoolZoneStudy" class="col-sm-2 col-form-label">School Zone Study:</label>
+        <div class="col-sm-10">
+        <div class="row">
+            <div class="col-sm-3">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                <div class="input-group-text">
+                    <input type="checkbox" name="highRisk1" aria-label="Checkbox for following text input" checked>
+                </div>
+                </div>
+                <input type="time" class="form-control" name="highRisk1Start" value="08:00" aria-label="Text input with checkbox">
+            </div>
+            </div>
+            <label class="col-form-label col-sm-1" for="highRisk1End">To</label>
+            <div class="col-sm-3">
+            <input type="time" class="form-control" name="highRisk1End" value="09:30">
+            </div>
+        </div>
+        <p></p>
+        <div class="row">
+            <div class="col-sm-3">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                <div class="input-group-text">
+                    <input type="checkbox" name="highRisk2" aria-label="Checkbox for following text input" checked>
+                </div>
+                </div>
+                <input type="time" class="form-control" name="highRisk2Start" value="11:00" aria-label="Text input with checkbox">
+            </div>
+            </div>
+            <label class="col-form-label col-sm-1" for="highRisk2End">To</label>
+            <div class="col-sm-3">
+            <input type="time" class="form-control" name="highRisk2End" value="12:30">
+            </div>
+        </div>
+        <p></p>
+        <div class="row">
+            <div class="col-sm-3">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                <div class="input-group-text">
+                    <input type="checkbox" name="highRisk3" aria-label="Checkbox for following text input" checked>
+                </div>
+                </div>
+                <input type="time" class="form-control" name="highRisk3Start" value="14:00" aria-label="Text input with checkbox">
+            </div>
+            </div>
+            <label class="col-form-label col-sm-1" for="highRisk3End">To</label>
+            <div class="col-sm-3">
+            <input type="time" class="form-control" name="highRisk3End" value="16:00">
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Preview and Save Report Buttons -->
+    <div class="form-group row">
+        <div class="col-sm-12 text-right">
+            <button type="button" id="school_preview_button" class="btn btn-secondary">Preview Report</button>
+        </div>
+    </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('school_preview_button').addEventListener('click', function() {
+        const form = document.getElementById('school_form');
+        const formData = new FormData(form);
+        formData.append('action', 'preview');
+        const companyHeader = document.getElementById('companyHeader').value;
+        const siteCode = document.getElementById('siteCodeInput').value;
+        const reportDescription = document.getElementById('reportDescription').value;
+
+        // Append these values to 'formData'
+        formData.append('companyHeader', companyHeader);
+        formData.append('siteCodeInput', siteCode);
+        formData.append('reportDescription', reportDescription);
+        
+        fetch('/school_zone/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json()) // Assuming your server responds with JSON
+        .then(data => {
+            console.log(data)
+            const reportWindow = window.open();
+            reportWindow.document.open();
+            reportWindow.document.write(data.html_content);
+            reportWindow.document.close();
+            
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>

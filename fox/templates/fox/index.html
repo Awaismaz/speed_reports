@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vehicle Speed Report</title>
+    <!-- Link to Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+
+  </head>
+  <body>
+    {% include 'accounts/header.html' %}
+    <div class="container mt-3">
+      <h2>FOX Reporting</h2>
+      <hr>
+      <!-- Nav tabs -->
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" data-toggle="tab" href="#detailedReport"
+            >Detailed Report</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#communitySafetyReport"
+            >Community Safety Report</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#schoolZoneStudy"
+            >School Zone Study</a
+          >
+        </li>
+      </ul>
+
+      <!-- Tab panes -->
+      <div class="tab-content">
+        {% include 'fox/detailed_report.html' %}
+        {% include 'fox/community_report.html' %}
+        {% include 'fox/school_zone.html' %}
+      </div>
+    </div>
+
+    <!-- jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // JavaScript to update the percentile value label as the range slider is moved
+        document.addEventListener('DOMContentLoaded', function() {
+          var percentileSlider = document.getElementById('percentileSelect');
+          var percentileValueDisplay = document.getElementById('percentileValue');
+        
+          percentileSlider.addEventListener('input', function() {
+            percentileValueDisplay.textContent = this.value + '%';
+          });
+        });
+    </script>
+
+
+
+</body>
+
+</html>
