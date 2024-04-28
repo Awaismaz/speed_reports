@@ -13,7 +13,6 @@ import os
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-bins=17
 
 def time_to_bin(s):
     hour = s.split(":")[0]
@@ -31,9 +30,8 @@ def format_hour(x):
     return formatted_time
 
 
-def speed_to_bin(df):
-    global bins
-    max_speed = 225
+def speed_to_bin(df, bins=17):
+    max_speed = df["speed"].max()
     bin_width = max_speed / bins
     speed_bins = np.arange(0, max_speed, bin_width).tolist()
     speed_bins.append(400)
@@ -42,10 +40,11 @@ def speed_to_bin(df):
         for x in range(len(speed_bins) - 1)
     ]
 
-    labels[-1] = f">{int(speed_bins[-2])}"
+    labels[-1] = f"{int(speed_bins[-2])}-{int(np.ceil(max_speed))}"
 
     return pd.cut(df["speed"], bins=speed_bins, labels=labels)
 
+      
 
 def length_to_bin(df):
     length_bins = [0, 2, 3, 5, 6, 8, 9, 12, 15, 18, 21, 24, 26]
@@ -157,6 +156,7 @@ def load_data(file, product=0):
 
 @login_required
 def index(request):
+    user = request.user
     context = {'lanes': range(1,17),
                'export_formats': [
                     {'id': 'pdfFormat', 'value': 'pdf', 'label': 'PDF'},
@@ -173,7 +173,11 @@ def index(request):
                     # Add more types here if needed
                 ],
                 'speed_bins_counts': [17, 11, 6],
-                'custom_bin': {'id': 'speedBinCustom', 'label': 'Custom'}
+                'custom_bin': {'id': 'speedBinCustom', 'label': 'Custom'},
+                'company_header': user.company_header,
+                'location': user.location,
+                'site_code': user.site_code,
+                'report_description': user.report_description
             }
     if request.method == "POST":
         # Handle form data, e.g., loading files, generating reports
@@ -233,6 +237,10 @@ def filter_data(request):
 
     # Extract filter criteria from request
     direction_filter = request.POST.get('direction', 'All')
+    if direction_filter=="Approaching":
+        direction_filter="A"
+    if direction_filter=="Receding":
+        direction_filter="R"    
     start_date_str = request.POST.get('startDate', '')
     end_date_str = request.POST.get('endDate', '')
     lane_filters = request.POST.getlist('lanes')  # Assuming lanes are passed as query parameters
@@ -271,6 +279,32 @@ def filter_data(request):
 @login_required
 @csrf_exempt
 def preview_report(request):
+    user = request.user
+
+    selected_bins = request.POST.get('speedBins')  # Get the selected speed bins option
+    
+    if selected_bins == 'custom':
+        selected_bins = request.POST.get('customBinValue', None)  # Get the custom bins value if 'custom' is selected       
+    
+    request.session['selected_bins'] = selected_bins
+    
+
+
+    # Retrieve data from form fields
+    company_header = request.POST.get('companyHeader')
+    location = request.POST.get('locationInput')
+    site_code = request.POST.get('siteCodeInput')
+    report_description = request.POST.get('reportDescription')
+    
+    # Update the user's information
+    user.company_header = company_header if company_header else user.company_header
+    user.location = location if location else user.location
+    user.site_code = site_code if site_code else user.site_code
+    user.report_description = report_description if report_description else user.report_description
+    
+    # Save the changes to the database
+    user.save()
+
     action = request.POST.get('action', 'preview')  # Default to 'preview'
     request.session['preview'] = True if action == 'preview' else False
 
@@ -282,6 +316,8 @@ def preview_report(request):
     direction_filter = request.session['direction_filter']
 
     filtered_data=pd.read_json(StringIO(request.session['filtered_data']), dtype={'lane': str})
+
+    filtered_data["Speed Bins"] = speed_to_bin(filtered_data, int(selected_bins))
 
     if report_type == "Speed":
         return speed_report(direction_filter, lane_filter, filtered_data, request)

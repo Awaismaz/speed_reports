@@ -2,9 +2,9 @@
     <form id="community_form">
     <!-- Location Input -->
     <div class="form-group row">
-        <label for="locationInput" class="col-sm-2 col-form-label">Location:</label>
+        <label for="locationInput" class="col-sm-2 col-form-label">Map Address:</label>
         <div class="col-sm-10">
-        <input type="text" class="form-control" name="locationInput" placeholder="Enter Location">
+        <input type="text" class="form-control" name="locationInput" placeholder="Enter Map Address" value="{{ location|default_if_none:"" }}">
         </div>
     </div>
 

@@ -7,6 +7,7 @@ from io import StringIO
 # from weasyprint import HTML
 from django.http import HttpResponse
 
+
 def format_hour(x):
     slot = "AM"
     if x // 12 == 1:
@@ -33,6 +34,9 @@ def speed_report(direction_filter, lane_filter, filtered_data, request=None):
         time_dict[i + 1] = format_hour(i)
 
     speed_by_hour = speed_by_hour.rename(index=time_dict)
+    speed_by_hour.index.name = 'Hour'
+    speed_by_hour.columns.name = 'Speed Bins (km/h)'
+
 
     return generate_reports(
         speed_by_hour, "SPEED", direction_filter, lane_filter,filtered_data=filtered_data,request=request
@@ -305,27 +309,97 @@ def generate_reports(data, category, direction_filter, lane_filter, advance=Fals
     if request.session['preview']:
         return JsonResponse({'html_content': html_content})
 
+
     else:
-
-
         if export_format == 'csv':
+            import csv
             # Prepare CSV response
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = f'attachment; filename="{file_name}.csv"'
-            # Convert DataFrame to CSV and write to the response
-            data.to_csv(path_or_buf=response, index=False)
-
+            
+            # Create a CSV writer
+            writer = csv.writer(response)
+            
+            # Write metadata before the table
+            writer.writerow(['Company Header:', context['company_header']])
+            writer.writerow(['Location:', context['report_location']])
+            writer.writerow(['Site Code:', context['site_code']])
+            writer.writerow(['Report Description:', context['report_description']])
+            writer.writerow([])
+            writer.writerow(['Category:', context['category']])
+            writer.writerow(['Direction Filter:', context['direction_filter']])
+            writer.writerow(['Lane Filter:', context['lane_filter']])
+            writer.writerow(['Start Date:', context['start_date']])
+            writer.writerow(['End Date:', context['end_date']])
+            writer.writerow(['Speed Limit:', context['speed_limit']])
+            writer.writerow([])
+            
+            # Write DataFrame to CSV
+            data.to_csv(path_or_buf=response, index=True, mode='a')
+            
+            # Write metadata after the table
+            writer.writerow([])
+            writer.writerow(['ADT:', context['ADT']])
+            writer.writerow(['Factor:', context['Factor']])
+            writer.writerow(['AADT:', context['AADT']])
 
         elif export_format == 'excel':
+            from openpyxl import Workbook
+
+
             # Prepare Excel response
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             response['Content-Disposition'] = f'attachment; filename="{file_name}.xlsx"'
 
-            # You need a buffer to write the Excel file to
-            with pd.ExcelWriter(response) as writer:
-                data.to_excel(writer, index=False)
-        
+            # Create a workbook and select the active worksheet
+            workbook = Workbook()
+            worksheet = workbook.active
+            worksheet.title = 'Complete Report'
+
+            # Writing metadata before the table
+            metadata = [
+                ['Company Header:', context['company_header']],
+                ['Location:', context['report_location']],
+                ['Site Code:', context['site_code']],
+                ['Report Description:', context['report_description']],
+                ['', ''],
+                ['Category:', context['category']],
+                ['Direction Filter:', context['direction_filter']],
+                # ['Lane Filter:', context['lane_filter']],
+                ['Start Date:', context['start_date']],
+                ['End Date:', context['end_date']],
+                ['Speed Limit:', context['speed_limit']],
+                ['', '']
+            ]
+            
+            for row in metadata:
+                worksheet.append(row)
+
+            # Calculate the starting row for actual data
+            data_start_row = len(metadata) + 1
+            
+            from openpyxl.utils.dataframe import dataframe_to_rows
+
+            # Convert DataFrame to Excel
+            for r in dataframe_to_rows(data, index=True, header=True):
+                worksheet.append(r)
+
+            # Append additional metadata after the data
+            additional_metadata = [
+                ['', ''],
+                ['ADT:', context['ADT']],
+                ['Factor:', context['Factor']],
+                ['AADT:', context['AADT']]
+            ]
+            
+            for row in additional_metadata:
+                worksheet.append(row)
+
+            # Save workbook to response
+            workbook.save(response)
+
         return response
+
 
 def get_selected_time_ranges(request):
     time_ranges = []

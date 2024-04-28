@@ -14,7 +14,7 @@
         <label for="selectDevice" class="col-sm-2 col-form-label">Select Device</label>
         <div class="col-sm-10">
           <select class="form-control" id="selectDevice" name="selectDevice">
-            <option value="0">AGD 34</option> <!-- Adjusted values for easier processing -->
+            <option value="0">AGD 343</option> <!-- Adjusted values for easier processing -->
             <option value="1">FOX</option>
             <!-- Add other devices as options -->
           </select>
@@ -43,8 +43,8 @@
             <div class="col-sm-10">
               <select class="form-control" id="directionFilter" name="direction">
                 <option>All</option>
-                <option>A</option>
-                <option>R</option>
+                <option>Approaching</option>
+                <option>Receding</option>
               </select>
             </div>
           </div>
@@ -87,49 +87,57 @@
     </div>    
   
     <form id="report">
-        <div class="form-group row">
-            <div class="col-sm-12">
-              <textarea
+      <div class="form-group row">
+        <div class="col-sm-12">
+            <label for="companyHeader">Company Header</label>
+            <textarea
                 class="form-control"
                 placeholder="Company Header"
                 id="companyHeader"
                 name="companyHeader"
                 rows="3"
-              ></textarea>
-            </div>
-          </div>
-      <div class="form-group row">
+            >{{ company_header|default_if_none:"" }}</textarea>
+        </div>
+    </div>
+    <div class="form-group row">
         <div class="col-sm-6">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Enter Location"
-            name="locationInput"
-            id="locationInput"
-          />
+            <label for="locationInput">Location</label>
+            <input
+                type="text"
+                class="form-control"
+                placeholder="Enter Location"
+                name="locationInput"
+                id="locationInput"
+                value="{{ location|default_if_none:"" }}"
+            />
         </div>
         <div class="col-sm-6">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Enter Site Code"
-            id="siteCodeInput"
-            name="siteCodeInput"
-          />
+            <label for="siteCodeInput">Site Code</label>
+            <input
+                type="text"
+                class="form-control"
+                placeholder="Enter Site Code"
+                id="siteCodeInput"
+                name="siteCodeInput"
+                value="{{ site_code|default_if_none:"" }}"
+            />
         </div>
-      </div>
-  
-      <div class="form-group row">
+    </div>
+    
+    <div class="form-group row">
         <div class="col-sm-12">
-          <textarea
-            class="form-control"
-            placeholder="Report Description"
-            id="reportDescription"
-            name="reportDescription"
-            rows="3"
-          ></textarea>
+            <label for="reportDescription">Report Description</label>
+            <textarea
+                class="form-control"
+                placeholder="Report Description"
+                id="reportDescription"
+                name="reportDescription"
+                rows="3"
+            >{{ report_description|default_if_none:"" }}</textarea>
         </div>
-      </div>
+    </div>
+    
+    
       <!-- Speed Bins -->
       <div class="form-group row">
           <label class="col-form-label col-sm-2 pt-0">Speed Bins</label>
@@ -345,5 +353,51 @@
         label.textContent = fileName ? fileName : 'Choose your File';
       });
     });
-    </script>
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectDevice = document.getElementById('selectDevice');
+        const reportType = document.getElementById('reportType');
+        
+        // Function to update the reportType options based on the selected device
+        function updateReportTypes() {
+            const device = selectDevice.value;
+            const optionsToToggle = ['Classification', 'Speed by Classification'];
+            
+            for (let option of reportType.options) {
+                if (optionsToToggle.includes(option.text)) {
+                    option.style.display = (device === "1") ? 'none' : '';  // Toggle based on device selection
+                }
+            }
+        }
     
+        // Listen for changes in the selectDevice dropdown
+        selectDevice.addEventListener('change', updateReportTypes);
+    
+        // Initial check on page load
+        updateReportTypes();
+    });
+  </script>
+
+  <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        var customBinInput = document.getElementById('customBinValue');
+        var radios = document.querySelectorAll('input[name="speedBins"]');
+
+        function toggleCustomInput() {
+            if (document.getElementById('speedBinCustom').checked) {
+                customBinInput.disabled = false;
+            } else {
+                customBinInput.disabled = true;
+                customBinInput.value = ''; // Optional: clear the input if custom is not selected
+            }
+        }
+
+        radios.forEach(function(radio) {
+            radio.addEventListener('change', toggleCustomInput);
+        });
+
+        toggleCustomInput();  // Call on page load to set initial state
+    });
+  </script>
