@@ -17,4 +17,4 @@ class CustomAttributeSimilarityValidator(UserAttributeSimilarityValidator):
                 raise e
 
     def get_help_text(self):
-        return 'Your password should not be too similar to your other personal information.'
+        return 'Avoid Using your name or other personal information.'
